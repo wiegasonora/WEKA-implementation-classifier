@@ -6,7 +6,6 @@
 package tubes2ai;
 
 import static java.lang.Math.exp;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Random;
 
@@ -17,7 +16,7 @@ import java.util.Random;
 public class MyNeuralModel {
     private double[][] inWeight;
     private double[][] outWeight;
-    private double[] output;
+    private double[] outputClasses;
 
     
     private final int numInput; //number of attributes in the Instances
@@ -73,8 +72,8 @@ public class MyNeuralModel {
         return outWeight;
     }
 
-    public double[] getOutput() {
-        return output;
+    public double[] getOutputClasses() {
+        return outputClasses;
     }
 
     public int getNumInput() {
@@ -93,7 +92,7 @@ public class MyNeuralModel {
         return isMulti;
     }
     
-    public MyNeuralModel(double[][] inputData, int numClasses, int numAttributes, int hiddenNeurons, double learningRateInput) {
+    public MyNeuralModel(double[][] trainData, int numClasses, int numAttributes, int hiddenNeurons, double learningRateInput) {
         
         numInput = numAttributes;
         numOutput = numClasses;
@@ -108,7 +107,7 @@ public class MyNeuralModel {
     
     public void initializeWeight() {
         if (isMulti) {
-            //
+            //inWeight -> the weight between input nodes and hidden layer nodes
             inWeight = new double[numInput+1][numHiddenNeuron+1];            
             for (int i = 1; i <= numInput; i++) {
                 for (int j = 1; j <= numHiddenNeuron; j++) {
@@ -116,6 +115,7 @@ public class MyNeuralModel {
                 }
             }
             
+            //outWeight -> the weight between hidden layer nodes and output nodes
             outWeight = new double[numOutput+1][numHiddenNeuron+1];            
             for (int i = 1; i <= numOutput; i++) {
                 for (int j = 1; j <= numHiddenNeuron; j++) {
@@ -124,6 +124,7 @@ public class MyNeuralModel {
             }
         }
         else {
+            //outWeight -> the weight between input nodes and output nodes
             outWeight = new double[numInput+1][numOutput+1];            
             for (int i = 1; i <= numInput; i++) {
                 for (int j = 1; j <= numOutput; j++) {
@@ -152,20 +153,31 @@ public class MyNeuralModel {
     public void backPropagation(double[][] example,int numEx) {
         double[] errOut = new double[numOutput+1];
         double[] errHid = new double[numHiddenNeuron+1];
+        double[] dataInput = new double[numInput]; 
+        double target = 0;
         for (int i = 0; i < numEx; i++) {
+            
             if (!isMulti) {
+                //single
                 for (int j = 1; j <= numOutput; j++) {
-                    errOut[j] = calcOutputError(j);
+                    if (j==numOutput) {
+                        target = outWeight[j][numOutput];
+                    }
+                    errOut[j] = calcOutputError(j,dataInput,target);
                 }
                 updateWeight();
             }
             else {
+                //multi
                 for (int j = 1; j <= numHiddenNeuron; j++) {
-                    errHid[j] = calcHiddenError(j);
+                    errHid[j] = calcHiddenError(j,dataInput);
                 }
                 
                 for (int j = 1; j <= numOutput; j++) {
-                    errOut[j] = calcOutputError(j);
+                    if (j==numOutput) {
+                        target = outWeight[j][numOutput];
+                    }
+                    errOut[j] = calcOutputError(j,dataInput,target);
                 }
                 
                 updateWeight();
@@ -174,29 +186,31 @@ public class MyNeuralModel {
         
     }
     
-    public double calcHiddenError(int nodeId) {
-        double total = 0;
+    public double calcHiddenError(int nodeId, double[] dataInput) {
+        double errorRate = 0;
+        errorRate = calcSigmoid(nodeId,dataInput,'h');
         
-        return total;
+        return errorRate;
     }
     
-    public double calcOutputError(int outId) {
-        double total = 0;
-        
-        return total;
+    public double calcOutputError(int nodeId, double[] dataInput, double target) {
+        double errorRate = 0;
+        double sigma = calcSigmoid(nodeId,dataInput,'o');
+        errorRate = sigma*(1-sigma)*(target-sigma);
+        return errorRate;
     }
     
-    public double calcSigmoid(int nodeId, double[] dataInput, int status) {
+    public double calcSigmoid(int nodeId, double[] dataInput, char status) {
         double val = 0;
         int i;
-        if (status==0) {
+        if (status=='o') {
             for (i = 1; i < dataInput.length ; i++) {
                 val += dataInput[i]*outWeight[i][nodeId];
             }
         }
-        else {
+        else if (status=='h'){
             for (i = 1; i < dataInput.length ; i++) {
-                val += dataInput[i]*outWeight[i][nodeId];
+                val += dataInput[i]*inWeight[i][nodeId];
             }
         }
         
