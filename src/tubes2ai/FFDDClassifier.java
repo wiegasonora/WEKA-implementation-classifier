@@ -15,7 +15,7 @@ import weka.core.Instances;
  *
  * @author user
  */
-public class SingleLayerClassifier implements Classifier {
+public class FFDDClassifier implements Classifier {
     private static int numAttributes;
     private static Instances mainInstances;
     

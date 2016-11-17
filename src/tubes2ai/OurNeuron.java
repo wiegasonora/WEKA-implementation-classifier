@@ -9,7 +9,7 @@ package tubes2ai;
  *
  * @author user
  */
-public class SingleNeuron {
+public class OurNeuron {
     private double[][] weight;
     private int numInput;
     private int numOutput;
@@ -19,7 +19,7 @@ public class SingleNeuron {
     
     private double[] dataInput;
     
-    public SingleNeuron(double[] inputData, boolean isAnyHidden, int hiddenNeurons, double learningRateInput) {
+    public OurNeuron(double[] inputData, boolean isAnyHidden, int hiddenNeurons, double learningRateInput) {
         
         numInput = inputData.length;
         numHiddenNeuron = hiddenNeurons;

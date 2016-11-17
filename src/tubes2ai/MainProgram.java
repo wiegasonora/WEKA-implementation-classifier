@@ -21,7 +21,7 @@ import weka.filters.unsupervised.attribute.NumericToNominal;
 public class MainProgram {
     private static final String filename = "C:\\\\Users\\\\user\\\\Documents\\\\NetBeansProjects\\\\TubesAIWeka\\\\test\\\\iris.arff";
     private static int lastIndex;
-    private static SingleLayerClassifier S;
+    private static FFDDClassifier S;
 
     public static void main(String Args[]) throws Exception {
         Instances I;
