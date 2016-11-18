@@ -26,6 +26,7 @@ public class FFDDClassifier implements Classifier {
     
     private int numInput; //number of attributes in the Instances
     private int numOutput; //number of classes in the Instances
+    private int numClasses;
     private int numHiddenNeuron = 0;
     private double learningRate;
     private boolean isMulti = false;
@@ -105,6 +106,11 @@ public class FFDDClassifier implements Classifier {
 
     @Override
     public double classifyInstance(Instance instnc) throws Exception {
+        double learningRateInput = 0.5;
+        MyNeuralModel neural = new MyNeuralModel(dataTraining, numClasses, numAttributes, numHiddenNeuron, learningRateInput);
+        double[] arrOutputClassifiy = new double[instnc.numClasses()];
+        //harusnya calcSigmoid return array
+        //neural.calcSigmoid(numInput, dataInput, 0);
         return 0;
     }
 
