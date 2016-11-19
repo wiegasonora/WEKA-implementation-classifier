@@ -35,7 +35,7 @@ public class MyNeuralModel {
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 6; j++) {
                 if (j==5) {
-                    A[i][j] = i;
+                    A[i][j] = i+1;
                 }
                 else { 
                     A[i][j] = j;
@@ -45,50 +45,23 @@ public class MyNeuralModel {
         MyNeuralModel MLP = new MyNeuralModel(A,4,6,2,0.1,1);
         double[][] in = MLP.getInWeight();
         double[][] out = MLP.getOutWeight();
-        DecimalFormat df = new DecimalFormat("#.#####");
         
-        for (int i = 1; i <= MLP.getNumInput(); i++) {
-            for (int j = 1; j <= MLP.getNumHiddenNeuron(); j++) {
-                System.out.print(df.format(in[i][j])+" ");
-            }
-            System.out.println("");
+        if (MLP.isMulti()) {
+            MLP.printMulti();
         }
-            
-        System.out.println("-===--------===-");
-        for (int i = 1; i <= MLP.getNumHiddenNeuron(); i++) {
-            for (int j = 1; j <= MLP.getNumOutput(); j++) {
-                System.out.printf(df.format(out[i][j])+" ");
-            }
-            System.out.println("");
+        else {
+            MLP.printSingle();
         }
-        int w = 10;
+        
+        int w = 100;
         MLP.backPropagation(A, 5,w);
         System.out.println("After BP");
         
         if (MLP.isMulti()) {
-            for (int i = 1; i <= MLP.getNumInput(); i++) {
-                for (int j = 1; j <= MLP.getNumHiddenNeuron(); j++) {
-                    System.out.print(df.format(inWeight[i][j])+" ");
-                }
-                System.out.println("");
-            }
-
-            System.out.println("-===--------===-");
-            for (int i = 1; i <= MLP.getNumHiddenNeuron(); i++) {
-                for (int j = 1; j <= MLP.getNumOutput(); j++) {
-                    System.out.printf(df.format(outWeight[i][j])+" ");
-                }
-                System.out.println("");
-            }
+            MLP.printMulti();
         }
         else {
-            System.out.println("-===--------===-");
-            for (int i = 1; i <= MLP.getNumInput(); i++) {
-                for (int j = 1; j <= MLP.getNumOutput(); j++) {
-                    System.out.printf(df.format(outWeight[i][j])+" ");
-                }
-                System.out.println("");
-            }
+            MLP.printSingle();
         }
         
     }
@@ -154,8 +127,8 @@ public class MyNeuralModel {
         else {
             //outWeight -> the weight between input nodes and output nodes
             outWeight = new double[numInput+1][numOutput+1];            
-            for (int i = 1; i <= numInput; i++) {
-                for (int j = 1; j <= numOutput; j++) {
+            for (int i = 0; i <= numInput; i++) {
+                for (int j = 0; j <= numOutput; j++) {
                     outWeight[i][j] = generateWeight();
                 }
             }
@@ -178,7 +151,7 @@ public class MyNeuralModel {
     
     public void updateWeight(double[] dataInput, double[] errOutput, double[] errHidden) {
         if (!isMulti) {
-            for (int i = 1; i <= numInput; i++) {
+            for (int i = 0; i <= numInput; i++) {
                 for (int j = 1; j <= numOutput; j++) {
                     //updating weight value
                     //System.out.println(outWeight[i][j]);
@@ -187,8 +160,8 @@ public class MyNeuralModel {
                 }
             }
         } else {
-            for (int i = 1; i <= numInput; i++) {
-                for (int j = 1; j <= numHiddenNeuron; j++) {
+            for (int i = 0; i <= numInput; i++) {
+                for (int j = 0; j <= numHiddenNeuron; j++) {
                     //System.out.println(inWeight[i][j]);
                     
                     inWeight[i][j] += calcSigmoid(j,dataInput,'h')*errHidden[j]*learningRate;
@@ -197,7 +170,7 @@ public class MyNeuralModel {
                 }
             }
             
-            for (int i = 1; i <= numHiddenNeuron; i++) {
+            for (int i = 0; i <= numHiddenNeuron; i++) {
                 for (int j = 1; j <= numOutput; j++) {
                     //System.out.println(outWeight[i][j]);
                     
@@ -212,7 +185,7 @@ public class MyNeuralModel {
     public void backPropagation(double[][] example,int numEx, int numIter) {
         double[] errHid = new double[numHiddenNeuron+1];
         double[] currData = new double[numInput+1]; 
-        double target;
+        double target, targetVal;
         hiddenVal = new double[numHiddenNeuron+1];
         int k;
         errOut = new double[numOutput+1];
@@ -222,11 +195,19 @@ public class MyNeuralModel {
                     currData[k+1] = example[i][k];
                     //System.out.println(currData[k+1]);
                 }
-                target = example[i][k-1];
+                targetVal = example[i][k-1];
+                target = 0;
 
                 if (!isMulti) {
                     //single
                     for (int j = 1; j <= numOutput; j++) {
+                        if (currData[numOutput]==targetVal) {
+                            target = 1;
+                        }
+                        else {
+                            target = 0;
+                        }
+                        
                         errOut[j] = calcOutputError(j,currData,target);
                     }
                     updateWeight(currData,errOut,null);
@@ -242,6 +223,12 @@ public class MyNeuralModel {
                     }
                     
                     for (int j = 1; j <= numOutput; j++) {
+                        if (currData[numOutput]==targetVal) {
+                            target = 1;
+                        }
+                        else {
+                            target = 0;
+                        }
                         errOut[j] = calcOutputError(j,currData,target);
                     }
 
@@ -312,10 +299,57 @@ public class MyNeuralModel {
         return val;
     }
     
-    public static double classifyInit(MyNeuralModel M) {
-        double outId = 0;
+    
+    public static double[] classifyInstOri(MyNeuralModel M, double[] dataInput) {
+        int o = M.getNumOutput();
+        int h = M.getNumHiddenNeuron();
         
+        double[] outVal = new double[o+1];
+        if (!M.isMulti()) {
+            for (int i = 1; i<=o; i++) {
+                outVal[i] = M.calcSigmoid(i,dataInput,'s'); 
+            }
+        }
+        else {
+            double[] hidVal = new double[h+1];
+            for (int i = 1; i<=h; i++) {
+                hidVal[i] = M.calcSigmoid(i, dataInput, 'h');
+            }
+            for (int i = 1; i<=o; i++) {
+                outVal[i] = M.calcSigmoid(i, hidVal, 'o');
+            }
+        }
         
-        return outId;
+        return outVal;
+    }
+    
+    public void printSingle() {
+        DecimalFormat df = new DecimalFormat("#.#####");
+
+        for (int i = 1; i <= getNumInput(); i++) {
+            for (int j = 1; j <= getNumOutput(); j++) {
+                System.out.printf(df.format(outWeight[i][j])+" ");
+            }
+            System.out.println("");
+        }
+    }
+    
+    public void printMulti() {
+        DecimalFormat df = new DecimalFormat("#.#####");
+
+        for (int i = 1; i <= getNumInput(); i++) {
+            for (int j = 1; j <= getNumHiddenNeuron(); j++) {
+                System.out.print(df.format(inWeight[i][j])+" ");
+            }
+            System.out.println("");
+        }
+
+        System.out.println("-===--------===-");
+        for (int i = 1; i <= getNumHiddenNeuron(); i++) {
+            for (int j = 1; j <= getNumOutput(); j++) {
+                System.out.printf(df.format(outWeight[i][j])+" ");
+            }
+            System.out.println("");
+        }
     }
 }
