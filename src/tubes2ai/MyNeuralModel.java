@@ -7,6 +7,7 @@ package tubes2ai;
 
 import static java.lang.Math.exp;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -35,16 +36,28 @@ public class MyNeuralModel {
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 6; j++) {
                 if (j==5) {
-                    A[i][j] = i+1;
+                    A[i][j] = (double)i%2;
+                   
                 }
                 else { 
-                    A[i][j] = j;
+                     A[i][j] = i+1+j;
                 }
             }
         }
-        MyNeuralModel MLP = new MyNeuralModel(A,4,6,2,0.1,1);
-        double[][] in = MLP.getInWeight();
-        double[][] out = MLP.getOutWeight();
+        System.out.println(Arrays.deepToString(A));
+        MyNeuralModel MLP = new MyNeuralModel(2,5,2,0.5,1); //numClasses,numAttribute,numHidden,learning rate,bias;
+        /*
+        double[][] in = new double[3][3];
+        in[1][1] = 0.1;
+        in[1][2] = 0.4;
+        in[2][1] = 0.8;
+        in[2][2] = 0.6;
+        double[][] out = new double[3][2];
+        out[1][1] = 0.3;
+        out[2][1] = 0.9;        
+        MLP.customWeight(in, out);
+        */
+        MLP.initializeWeight();
         
         if (MLP.isMulti()) {
             MLP.printMulti();
@@ -53,7 +66,10 @@ public class MyNeuralModel {
             MLP.printSingle();
         }
         
-        int w = 100;
+        int w = 1;
+        double d[][] = new double[1][2];
+        d[0][0] = 0.35;
+        d[0][1] = 0.9;
         MLP.backPropagation(A, 5,w);
         System.out.println("After BP");
         
@@ -91,7 +107,7 @@ public class MyNeuralModel {
         return isMulti;
     }
     
-    public MyNeuralModel(double[][] trainData, int numClasses, int numAttributes, int hiddenNeurons, double learningRateInput, double b) {
+    public MyNeuralModel(int numClasses, int numAttributes, int hiddenNeurons, double learningRateInput, double b) {
         
         numInput = numAttributes;
         numOutput = numClasses;
@@ -103,7 +119,6 @@ public class MyNeuralModel {
             numHiddenNeuron = hiddenNeurons;
         }
         
-        initializeWeight();
     }
     
     public void initializeWeight() {
@@ -150,11 +165,13 @@ public class MyNeuralModel {
     }
     
     public void updateWeight(double[] dataInput, double[] errOutput, double[] errHidden) {
+        
+        System.out.println("update input: "+Arrays.toString(dataInput));
         if (!isMulti) {
             for (int i = 0; i <= numInput; i++) {
                 for (int j = 1; j <= numOutput; j++) {
                     //updating weight value
-                    //System.out.println(outWeight[i][j]);
+                    //System.out.print(errOutput[j]+" ");
                     outWeight[i][j] += calcSigmoid(j,dataInput,'s')*errOutput[j]*learningRate;
                     //System.out.println(outWeight[i][j]);
                 }
@@ -163,7 +180,7 @@ public class MyNeuralModel {
             for (int i = 0; i <= numInput; i++) {
                 for (int j = 0; j <= numHiddenNeuron; j++) {
                     //System.out.println(inWeight[i][j]);
-                    
+                    //System.out.print(errHidden[j]+" ");
                     inWeight[i][j] += calcSigmoid(j,dataInput,'h')*errHidden[j]*learningRate;
                     //System.out.println(inWeight[i][j]);
                     
@@ -173,7 +190,7 @@ public class MyNeuralModel {
             for (int i = 0; i <= numHiddenNeuron; i++) {
                 for (int j = 1; j <= numOutput; j++) {
                     //System.out.println(outWeight[i][j]);
-                    
+                    //System.out.print(errOutput[j]+" ");
                     outWeight[i][j] = calcSigmoid(j,dataInput,'o')*errOutput[j]*learningRate;
                     //System.out.println(outWeight[i][j]);
                     
@@ -197,10 +214,12 @@ public class MyNeuralModel {
                 }
                 targetVal = example[i][k-1];
                 target = 0;
-
+                
+                System.out.println("before update: "+Arrays.toString(currData));
                 if (!isMulti) {
                     //single
                     for (int j = 1; j <= numOutput; j++) {
+                        System.out.println(currData[numOutput]);
                         if (currData[numOutput]==targetVal) {
                             target = 1;
                         }
@@ -239,9 +258,6 @@ public class MyNeuralModel {
     }
     
     
-    /*
-        MASIH EROOR
-    */
     public double calcHiddenError(int nodeId, double[] dataInput) {
         double errorRate;
         double sigma = calcSigmoid(nodeId,dataInput,'h');
@@ -337,19 +353,35 @@ public class MyNeuralModel {
     public void printMulti() {
         DecimalFormat df = new DecimalFormat("#.#####");
 
-        for (int i = 1; i <= getNumInput(); i++) {
-            for (int j = 1; j <= getNumHiddenNeuron(); j++) {
+        for (int i = 0; i <= getNumInput(); i++) {
+            for (int j = 0; j <= getNumHiddenNeuron(); j++) {
+                if (i==0||j==0) {
+                    System.out.print("(bias)");
+                }
                 System.out.print(df.format(inWeight[i][j])+" ");
             }
             System.out.println("");
         }
 
         System.out.println("-===--------===-");
-        for (int i = 1; i <= getNumHiddenNeuron(); i++) {
+        for (int i = 0; i <= getNumHiddenNeuron(); i++) {
             for (int j = 1; j <= getNumOutput(); j++) {
+                if (i==0) {
+                    System.out.print("(bias)");
+                }
                 System.out.printf(df.format(outWeight[i][j])+" ");
             }
             System.out.println("");
+        }
+    }
+    
+    public void customWeight(double[][] in, double[][] out) {
+        if (!isMulti) {
+            outWeight = out;            
+        }
+        else {
+            inWeight = in;
+            outWeight = out;
         }
     }
 }
