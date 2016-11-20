@@ -107,8 +107,32 @@ public class FFDDClassifier implements Classifier {
     @Override
     public double classifyInstance(Instance instnc) throws Exception {
         double learningRateInput = 0.5;
-        MyNeuralModel neural = new MyNeuralModel(dataTraining, numClasses, numAttributes, numHiddenNeuron, learningRateInput);
-        double[] arrOutputClassifiy = new double[instnc.numClasses()];
+        double b = 0;
+        MyNeuralModel neural = new MyNeuralModel(dataTraining, numClasses, numAttributes, numHiddenNeuron, learningRateInput, b);
+        
+        
+        //initialize array
+        double[] arrOutputClassify = new double[instnc.numClasses()];
+        for (int i = 0; i < arrOutputClassify.length; i++){
+            arrOutputClassify[i] = 0;
+        }
+        
+        //generate sigmoid
+        arrOutputClassify = MyNeuralModel.classifyInstOri(neural, dataInput);
+        
+        //find max sigmoid
+        int maxSigmoidId = 0;
+        for (int i = 0; i < arrOutputClassify.length; i++){
+            if (arrOutputClassify[i] > arrOutputClassify[maxSigmoidId]){
+               maxSigmoidId = i;
+            }
+        }
+        
+  
+        //classifying
+        
+        
+        //pelajarin normalisasi utk 
         //harusnya calcSigmoid return array
         //neural.calcSigmoid(numInput, dataInput, 0);
         return 0;
