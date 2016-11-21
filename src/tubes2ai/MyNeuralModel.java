@@ -46,18 +46,20 @@ public class MyNeuralModel {
         }
         System.out.println(Arrays.deepToString(A));
         MyNeuralModel MLP = new MyNeuralModel(2,2,1,0.5,1); //numClasses,numAttribute,numHidden,learning rate,bias;
-        /*
-        double[][] in = new double[3][3];
+        
+        double[][] in = new double[3][2];
+        in[0][1] = 0.5;
         in[1][1] = 0.1;
-        in[1][2] = 0.4;
         in[2][1] = 0.8;
-        in[2][2] = 0.6;
-        double[][] out = new double[3][2];
+        
+        double[][] out = new double[2][3];
+        out[0][1] = 0.5;
+        out[0][2] = 0.5;
         out[1][1] = 0.3;
-        out[2][1] = 0.9;        
+        out[1][2] = 0.9;        
         MLP.customWeight(in, out);
-        */
-        MLP.initializeWeight();
+        
+        //MLP.initializeWeight();
         
         if (MLP.isMulti()) {
             MLP.printMulti();
@@ -70,7 +72,7 @@ public class MyNeuralModel {
         double d[][] = new double[1][2];
         d[0][0] = 0.35;
         d[0][1] = 0.9;
-        MLP.backPropagation(A, 3,w);
+        MLP.backPropagation(A, 3);
         System.out.println("After BP");
         
         if (MLP.isMulti()) {
@@ -117,7 +119,9 @@ public class MyNeuralModel {
         if (hiddenNeurons >0) {
             isMulti = true;
             numHiddenNeuron = hiddenNeurons;
+            hiddenVal = new double[numHiddenNeuron+1];
         }
+        outputVal = new double[numOutput];
         
     }
     
@@ -132,7 +136,7 @@ public class MyNeuralModel {
             }
             
             //outWeight -> the weight between hidden layer nodes and output nodes
-            outWeight = new double[numHiddenNeuron+1][numOutput+1];            
+            outWeight = new double[numHiddenNeuron+1][numOutput];            
             for (int i = 0; i <= numHiddenNeuron; i++) {
                 for (int j = 0; j <= numOutput; j++) {
                     outWeight[i][j] = generateWeight();
@@ -141,7 +145,7 @@ public class MyNeuralModel {
         }
         else {
             //outWeight -> the weight between input nodes and output nodes
-            outWeight = new double[numInput+1][numOutput+1];            
+            outWeight = new double[numInput+1][numOutput];            
             for (int i = 0; i <= numInput; i++) {
                 for (int j = 0; j <= numOutput; j++) {
                     outWeight[i][j] = generateWeight();
@@ -166,61 +170,66 @@ public class MyNeuralModel {
     
     public void updateWeight(double[] dataInput, double[] errOutput, double[] errHidden) {
         
-        System.out.println("update input: "+Arrays.toString(dataInput));
         if (!isMulti) {
             for (int i = 0; i <= numInput; i++) {
                 for (int j = 1; j <= numOutput; j++) {
                     //updating weight value
                     //System.out.print(errOutput[j]+" ");
-                    outWeight[i][j] += calcSigmoid(j,dataInput,'s')*errOutput[j]*learningRate;
-                    //System.out.println(outWeight[i][j]);
+                    System.out.println(outWeight[i][j]);
+                    outWeight[i][j] += outputVal[j-1]*errOutput[j]*learningRate;
+                    System.out.println(outWeight[i][j]);
                 }
             }
         } else {
             for (int i = 0; i <= numInput; i++) {
-                for (int j = 0; j <= numHiddenNeuron; j++) {
-                    //System.out.println(inWeight[i][j]);
-                    //System.out.print(errHidden[j]+" ");
-                    inWeight[i][j] += calcSigmoid(j,dataInput,'h')*errHidden[j]*learningRate;
-                    //System.out.println(inWeight[i][j]);
+                for (int j = 1; j <= numHiddenNeuron; j++) {
+                    System.out.println("punya in"+i+" "+j);
+                    System.out.println("awal "+inWeight[i][j]);
+                    System.out.println("eror nya"+errHidden[j]+" "+"outputnya "+hiddenVal[j]);
+                    inWeight[i][j] += hiddenVal[j]*errHidden[j]*learningRate;
+                    System.out.println("akhir "+inWeight[i][j]);
                     
                 }
             }
             
             for (int i = 0; i <= numHiddenNeuron; i++) {
-                for (int j = 1; j <= numOutput; j++) {
-                    //System.out.println(outWeight[i][j]);
-                    //System.out.print(errOutput[j]+" ");
-                    outWeight[i][j] = calcSigmoid(j,dataInput,'o')*errOutput[j]*learningRate;
-                    //System.out.println(outWeight[i][j]);
+                for (int j = 0; j < numOutput; j++) {
+                    System.out.println("punya out"+i+" "+j);
+                    System.out.println("awal "+outWeight[i][j]);
+                    System.out.println("eror nya"+errOutput[j]+" "+"outputnya "+outputVal[j]);
+                    outWeight[i][j] = outputVal[j]*errOutput[j]*learningRate;
+                    System.out.println(outWeight[i][j]);
                     
                 }
             }
         }
     }
     
-    public void backPropagation(double[][] example,int numEx, int numIter) {
+    public void backPropagation(double[][] example,int numEx) {
         double[] errHid = new double[numHiddenNeuron+1];
         double[] currData = new double[numInput+2]; 
         double target, targetVal;
-        hiddenVal = new double[numHiddenNeuron+1];
+        
+        double threshold = 0.5;
+        double sumError = 10;
+        double[] instError = new double[numEx];
         int k;
-        errOut = new double[numOutput+1];
-        for (int a=0; a<numIter;a++) {
+        errOut = new double[numOutput];
+        while (sumError>threshold) {
             for (int i = 0; i < numEx; i++) {
                 for (k = 0; k <= numInput;k++) {
                     currData[k+1] = example[i][k];
                     //System.out.println(currData[k+1]);
                 }
                 targetVal = example[i][k-1];
-                System.out.println("target: "+targetVal);
+                //System.out.println("target: "+targetVal);
                 
-                System.out.println("before update: "+Arrays.toString(currData));
+                //System.out.println("before update: "+Arrays.toString(currData));
                 if (!isMulti) {
                     //single
                     for (int j = 1; j <= numOutput; j++) {
-                        System.out.println("class: "+currData[numOutput+1]);
-                        if (currData[numOutput+1]==targetVal) {
+                        System.out.println("class: "+currData[numOutput]);
+                        if (j==(1+targetVal)) {
                             target = 1;
                         }
                         else {
@@ -238,10 +247,10 @@ public class MyNeuralModel {
                         hiddenVal[l] = calcSigmoid(l,currData,'h');
                     }
                     System.out.println("hidden output: "+Arrays.toString(hiddenVal));
-                    for (int j = 1; j <= numOutput; j++) {
-                        System.out.println("class: "+currData[numOutput+1]);
+                    for (int j = 0; j < numOutput; j++) {
+                        System.out.println("class: "+currData[numOutput]);
                     
-                        if (currData[numOutput+1]==targetVal) {
+                        if (j==(1+targetVal)) {
                             target = 1;
                         }
                         else {
@@ -250,18 +259,21 @@ public class MyNeuralModel {
                         System.out.println("targVal: "+target);
                         errOut[j] = calcOutputError(j,hiddenVal,target);
                     }
-                    
-                    for (int j = 1; j <= numHiddenNeuron; j++) {
+                    System.out.println("Output ERROR: "+Arrays.toString(errOut));
+                    for (int j = 0; j <= numHiddenNeuron; j++) {
                         errHid[j] = calcHiddenError(j,currData);
                     }
-                    
+                    System.out.println("Hidden ERROR: "+Arrays.toString(errHid));
                     
                     
                     
 
                     updateWeight(currData,errOut,errHid);
                 }
+                instError[i] = 0;
+                sumError = 0;
             }
+            
         }
     }
     
@@ -271,7 +283,7 @@ public class MyNeuralModel {
         double sigma = calcSigmoid(nodeId,dataInput,'h');
         
         double outSigma = 0;
-        for (int i=1; i<=numOutput;i++) {
+        for (int i=0; i<numOutput;i++) {
             outSigma += errOut[i]*outWeight[nodeId][i];
         }
         errorRate = sigma*(1-sigma)*(outSigma);
@@ -289,6 +301,8 @@ public class MyNeuralModel {
         }
         
         double sigma = calcSigmoid(nodeId,dataInput,a);
+        System.out.println(Arrays.toString(outputVal));
+        outputVal[nodeId] = sigma;
         System.out.println("292 output ="+ sigma);
         errorRate = sigma*(1-sigma)*(target-sigma);
         System.out.println("294 error ="+errorRate);
@@ -306,6 +320,8 @@ public class MyNeuralModel {
                     System.out.println("multi out w="+outWeight[i][nodeId]+" at="+dataInput[i]);
                     val += dataInput[i]*outWeight[i][nodeId];
                 }   
+                System.out.println("multi out wbias="+outWeight[0][nodeId]+" bias="+bias);
+                System.out.println("310 val "+val);
                 val+=bias*outWeight[0][nodeId];
                 break;
                 }
@@ -332,6 +348,7 @@ public class MyNeuralModel {
         System.out.println("329 "+val);
         val = 1 / (1+exp((-1)*val));
         System.out.println("331 "+val);
+        
         
         return val;
     }
