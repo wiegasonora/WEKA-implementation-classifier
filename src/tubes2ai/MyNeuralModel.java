@@ -15,7 +15,7 @@ import java.util.Random;
  *
  * @author user
  */
-public class MyNeuralModel {
+public class MyNeuralModel implements Serializable{
     public static double[][] inWeight;
     public static double[][] outWeight;
     private double[] errOut;
@@ -234,7 +234,7 @@ public class MyNeuralModel {
         int k;
         errOut = new double[numOutput];
         int iter = 0;
-        while (iter < 5000) {
+        while (iter < 10000) {
             iter++;
             System.out.println("iterasi ke-"+iter); 
             for (int i = 0; i < numEx; i++) {

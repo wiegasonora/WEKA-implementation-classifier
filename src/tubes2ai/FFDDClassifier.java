@@ -5,6 +5,7 @@
  */
 package tubes2ai;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Enumeration;
 import weka.classifiers.AbstractClassifier;
@@ -21,7 +22,7 @@ import java.util.Scanner;
  *
  * @author user
  */
-public class FFDDClassifier extends AbstractClassifier {
+public class FFDDClassifier extends AbstractClassifier implements Serializable{
     private static int numAttributes;
     private static Instances mainInstances;
     
@@ -43,11 +44,11 @@ public class FFDDClassifier extends AbstractClassifier {
     private MyNeuralModel MLP;
     private double[] dataInput;
     private double[][] dataTraining;
-    Scanner in = new Scanner(System.in);
     
     @Override
     public void buildClassifier(Instances input) throws Exception {
         
+        Scanner in = new Scanner(System.in);
         Normalize norm = new Normalize();
         norm.setInputFormat(input);
         Filter filter = new NominalToBinary();

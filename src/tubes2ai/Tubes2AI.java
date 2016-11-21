@@ -20,10 +20,12 @@ import java.io.Serializable;
  *
  * @author user
  */
-public class Tubes2AI  {
-
+public class Tubes2AI implements Serializable {
+    
+    
     /**
      * @param args the command line arguments
+     * @throws java.lang.Exception
      */
     public static void main(String[] args) throws Exception {
         // TODO code application logic here
@@ -38,15 +40,17 @@ public class Tubes2AI  {
         int numHiddenNeuron;
         double learningRate;
         double bias;
-
+        Scanner in = new Scanner(System.in);
         boolean isMulti = false;
         
-        //load dataset from iris.arff
-        Scanner in = new Scanner(System.in);
+        //load dataset from input file
+        
         System.out.print("Masukkan nama file: ");
         String inputFile = in.next();
         DataSource data = new DataSource(inputFile);
         Instances data1 = data.getDataSet();
+        
+        //set class index
         System.out.print("Masukkan index class: ");
         int inputIdxClass = in.nextInt();
         data1.setClassIndex(inputIdxClass);
@@ -69,10 +73,10 @@ public class Tubes2AI  {
         int inputOption = in.nextInt();
         if (inputOption == 1){
             eval.evaluateModel(FFNN, data1);
-            //weka.core.SerializationHelper.write("FFNN.model", FFNN);
+            weka.core.SerializationHelper.write("FFNN.model", FFNN);
         } else if (inputOption == 2){
-            eval.crossValidateModel(FFNN, data1, 10, new Random(1));
-            //weka.core.SerializationHelper.write("FFNN.model", FFNN);
+            eval.crossValidateModel(FFNN, data1, 4, new Random(1));
+            weka.core.SerializationHelper.write("FFNN.model", FFNN);
         }
         
         System.out.println(eval.toMatrixString("=====Confusion matrix====="));
