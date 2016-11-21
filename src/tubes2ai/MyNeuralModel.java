@@ -5,6 +5,7 @@
  */
 package tubes2ai;
 
+import java.io.Serializable;
 import static java.lang.Math.exp;
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -114,6 +115,10 @@ public class MyNeuralModel {
         return numHiddenNeuron;
     }
 
+    public double getBias(){
+        return bias;
+    }
+    
     public boolean isMulti() {
         return isMulti;
     }
@@ -229,7 +234,7 @@ public class MyNeuralModel {
         int k;
         errOut = new double[numOutput];
         int iter = 0;
-        while (iter < 1000) {
+        while (iter < 5000) {
             iter++;
             System.out.println("iterasi ke-"+iter); 
             for (int i = 0; i < numEx; i++) {
@@ -452,5 +457,9 @@ public class MyNeuralModel {
         
         last = data[data.length-1];
         return last;
+    }
+    
+    public void setIsMulti(boolean b){
+        isMulti = b;
     }
 }

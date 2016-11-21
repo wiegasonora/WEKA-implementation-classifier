@@ -5,6 +5,7 @@
  */
 package tubes2ai;
 
+import java.util.Random;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
@@ -12,12 +13,14 @@ import weka.core.converters.ConverterUtils;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Normalize;
+import java.util.Scanner;
+import java.io.Serializable;
 
 /**
  *
  * @author user
  */
-public class Tubes2AI {
+public class Tubes2AI  {
 
     /**
      * @param args the command line arguments
@@ -39,12 +42,16 @@ public class Tubes2AI {
         boolean isMulti = false;
         
         //load dataset from iris.arff
-        DataSource data = new DataSource("mush.arff");
+        Scanner in = new Scanner(System.in);
+        System.out.print("Masukkan nama file: ");
+        String inputFile = in.next();
+        DataSource data = new DataSource(inputFile);
         Instances data1 = data.getDataSet();
-        data1.setClassIndex(0);
+        System.out.print("Masukkan index class: ");
+        int inputIdxClass = in.nextInt();
+        data1.setClassIndex(inputIdxClass);
         numInput = data1.numAttributes();
         numOutput = data1.numClasses();
-        numHiddenNeuron = 10;
         isMulti = true;
         
         
@@ -56,7 +63,18 @@ public class Tubes2AI {
         Filter.useFilter(data1, norm);
         
         Evaluation eval = new Evaluation(data1);
-        eval.evaluateModel(FFNN, data1);
+        System.out.println("1. Full Training");
+        System.out.println("2. 10-Fold Cross Validation");
+        System.out.print("Pilih model evaluasi:");
+        int inputOption = in.nextInt();
+        if (inputOption == 1){
+            eval.evaluateModel(FFNN, data1);
+            //weka.core.SerializationHelper.write("FFNN.model", FFNN);
+        } else if (inputOption == 2){
+            eval.crossValidateModel(FFNN, data1, 10, new Random(1));
+            //weka.core.SerializationHelper.write("FFNN.model", FFNN);
+        }
+        
         System.out.println(eval.toMatrixString("=====Confusion matrix====="));
         System.out.println(eval.toSummaryString("\nResult:",true));
         System.out.println("Precision = " + eval.precision(1));
