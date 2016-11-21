@@ -45,7 +45,7 @@ public class MyNeuralModel {
             }
         }
         System.out.println(Arrays.deepToString(A));
-        MyNeuralModel MLP = new MyNeuralModel(2,2,1,0.5,1); //numClasses,numAttribute,numHidden,learning rate,bias;
+        MyNeuralModel MLP = new MyNeuralModel(2,2,0,0.5,1); //numClasses,numAttribute,numHidden,learning rate,bias;
         
         double[][] in = new double[3][2];
         in[0][1] = 0.5;
@@ -57,8 +57,17 @@ public class MyNeuralModel {
         out[0][1] = 0.5;
         out[1][0] = 0.3;
         out[1][1] = 0.9;        
-        MLP.customWeight(in, out);
         
+        double[][] sing = new double[3][2];
+        sing[0][0] = 0.5;
+        sing[0][1] = 0.5;
+        sing[1][0] = 0.3;
+        sing[1][1] = 0.9;        
+        sing[2][0] = 0.4;
+        sing[2][1] = 0.6;
+                
+        //MLP.customWeight(in, out);
+        MLP.customWeight(in,sing);
         //MLP.initializeWeight();
         
         if (MLP.isMulti()) {
@@ -174,10 +183,21 @@ public class MyNeuralModel {
             for (int i = 0; i <= numInput; i++) {
                 for (int j = 0; j < numOutput; j++) {
                     //updating weight value
-                    //System.out.print(errOutput[j]+" ");
-                    System.out.println(outWeight[i][j]);
-                    outWeight[i][j] += outputVal[j]*errOutput[j]*learningRate;
-                    System.out.println(outWeight[i][j]);
+                    if (i==0) {
+                        System.out.println("punya out"+i+" "+j);
+                        System.out.println("awal "+outWeight[i][j]);
+                        System.out.println("eror nya"+errOutput[j]+" "+"hiddennya "+bias);
+                        
+                        outWeight[i][j] += bias*errOutput[j]*learningRate;
+                        System.out.println("w bias="+outWeight[i][j]);
+                    }
+                    else {
+                        //System.out.print(errOutput[j]+" ");
+                        System.out.println(outWeight[i][j]);
+                        System.out.println("data ="+dataInput[i]);
+                        outWeight[i][j] += dataInput[i]*errOutput[j]*learningRate;
+                        System.out.println(outWeight[i][j]);
+                    }
                 }
             }
         } else {
@@ -240,10 +260,11 @@ public class MyNeuralModel {
                 System.out.println("before update: "+Arrays.toString(currData));
                 if (!isMulti) {
                     //single
-                    for (int j = 1; j <= numOutput; j++) {
+                    for (int j = 0; j < numOutput; j++) {
                         System.out.println("class: "+getClassFromData(currData));
-                        if (j==(1+targetVal)) {
+                        if (j==(targetVal)) {
                             target = 1;
+                            System.out.println("yoi "+target);
                         }
                         else {
                             target = 0;
@@ -251,6 +272,8 @@ public class MyNeuralModel {
                         
                         errOut[j] = calcOutputError(j,currData,target);
                     }
+                    System.out.println("error Single "+Arrays.toString(errOut));
+                    System.out.println(Arrays.toString(currData));
                     updateWeight(currData,errOut,null);
                 }
                 else { //multi
@@ -282,7 +305,7 @@ public class MyNeuralModel {
                     System.out.println(Arrays.toString(currData));
                     updateWeight(currData,errOut,errHid);
                 }
-                printMulti();
+                printSingle();
                 instError[i] = 0;
                 sumError = 0;
             }
@@ -351,6 +374,7 @@ public class MyNeuralModel {
                     System.out.println("single out w="+outWeight[i][nodeId]+" at="+dataInput[i]);
                     val += dataInput[i]*outWeight[i][nodeId];
                 }   
+                System.out.println("364 val "+val);
                 val+=bias*outWeight[0][nodeId];
                 break;
                 }
@@ -394,7 +418,7 @@ public class MyNeuralModel {
         DecimalFormat df = new DecimalFormat("#.#####");
 
         for (int i = 0; i <= getNumInput(); i++) {
-            for (int j = 1; j <= getNumOutput(); j++) {
+            for (int j = 0; j < getNumOutput(); j++) {
                 System.out.printf(df.format(outWeight[i][j])+" ");
             }
             System.out.println("");
