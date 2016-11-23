@@ -59,14 +59,30 @@ public class Tubes2AI implements Serializable {
         isMulti = true;
         
         
-        FFDDClassifier FFNN;
+        Classifier FFNN;
         FFNN = new FFDDClassifier();
-        FFNN.buildClassifier(data1);
+        System.out.println("1. Load model");
+        System.out.println("2. Build new");
+        System.out.print("Masukkan pilihan : ");
+        int inputOptionModel = in.nextInt();
+        
+        if (inputOptionModel == 1){
+            System.out.print("Masukkan nama file model : ");
+            String inputFileModel = in.next();
+            FFNN = (FFDDClassifier) weka.core.SerializationHelper.read(inputFileModel);
+            
+        } else if (inputOptionModel == 2){
+            FFNN.buildClassifier(data1);
+        }
+        
         Normalize norm = new Normalize();
         norm.setInputFormat(data1);
         Filter.useFilter(data1, norm);
         
-        Evaluation eval = new Evaluation(data1);
+        DataSource data21 = new DataSource("Team_test.arff");
+        Instances data12 = data21.getDataSet();
+        data12.setClassIndex(12);
+        Evaluation eval = new Evaluation(data12);
         System.out.println("1. Full Training");
         System.out.println("2. 10-Fold Cross Validation");
         System.out.print("Pilih model evaluasi:");
@@ -76,8 +92,10 @@ public class Tubes2AI implements Serializable {
             weka.core.SerializationHelper.write("FFNN.model", FFNN);
         } else if (inputOption == 2){
             eval.crossValidateModel(FFNN, data1, 4, new Random(1));
+            
             weka.core.SerializationHelper.write("FFNN.model", FFNN);
         }
+        
         
         System.out.println(eval.toMatrixString("=====Confusion matrix====="));
         System.out.println(eval.toSummaryString("\nResult:",true));

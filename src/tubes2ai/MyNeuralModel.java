@@ -227,16 +227,18 @@ public class MyNeuralModel implements Serializable{
         double[] errHid = new double[numHiddenNeuron+1];
         double[] currData = new double[numInput+2]; 
         double target, targetVal;
-        System.out.println("class "+numOutput);
+        //System.out.println("class "+numOutput);
         double threshold = 0.5;
         double sumError = 10;
         double[] instError = new double[numEx];
         int k;
         errOut = new double[numOutput];
         int iter = 0;
-        while (iter < 10000) {
+        while (iter < 20000) {
             iter++;
-            System.out.println("iterasi ke-"+iter); 
+            if (iter % 100 == 0){
+                System.out.println("iterasi ke-"+iter); 
+            }
             for (int i = 0; i < numEx; i++) {
                 //System.out.println(numInput);
                 for (k = 0; k <= numInput;k++) {
@@ -299,10 +301,6 @@ public class MyNeuralModel implements Serializable{
             }
             
         }
-        if (isMulti) {
-        printMulti();
-        }
-        else printSingle();
     }
     
     
@@ -355,6 +353,7 @@ public class MyNeuralModel implements Serializable{
                 }
             case 'h': {
                 for (i = 1; i <= numInput ; i++) {
+                    
                     //System.out.println("hidden w="+inWeight[i][nodeId]+" at="+dataInput[i]);
                     val += dataInput[i]*inWeight[i][nodeId];
                 }   
@@ -443,6 +442,8 @@ public class MyNeuralModel implements Serializable{
     }
     
     public void customWeight(double[][] in, double[][] out) {
+        inWeight = new double[numInput+1][numHiddenNeuron+1];            
+        outWeight = new double[numInput+1][numOutput];            
         if (!isMulti) {
             outWeight = out;            
         }
